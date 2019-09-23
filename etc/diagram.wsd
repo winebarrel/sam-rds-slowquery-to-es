@@ -1,0 +1,8 @@
+@startditaa
++-----+    +----------+    +---------------------+    +-------------+
+|     |    |          |    |         SAM         |    |             |
+| RDS |    |CloudWatch|    | rds_slowquery_to_es |    |Elasticsearch|
+|  {s}+--->|   Logs   +--->|                     +--->|   Service   |
+|     |    |       {d}|    |(Subscription Filter)|    |          {s}|
++-----+    +----------+    +---------------------+    +-------------+
+@endditaa

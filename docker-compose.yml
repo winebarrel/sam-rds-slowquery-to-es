@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+    ports:
+      - 9200:9200
+    environment:
+      discovery.type: single-node
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      default: {}
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.1.1
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks:
+      default: {}
+volumes:
+  esdata:
+    driver: local
+networks:
+  default:
+    name: sam-rds-rds-slowquery-to-es

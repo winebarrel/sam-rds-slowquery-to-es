@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  rds-slowquery-to-es
+
+Globals:
+  Function:
+    Timeout: 60
+
+Parameters:
+  Revision:
+    Type: String
+
+Resources:
+  RdsSlowqueryToEsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Tags:
+        Revision:
+          Ref: Revision
+      FunctionName: sam-rds-slowquery-to-es
+      CodeUri: rds_slowquery_to_es
+      Handler: app.lambda_handler
+      Runtime: ruby2.5
+      Role: arn:aws:iam::123456789012:role/rds-slowquery-to-es # FIXME:
+      Environment:
+        Variables:
+          ELASTICSEARCH_URL: https://search-slowquery-xxx.ap-northeast-1.es.amazonaws.com:443 # FIXME:

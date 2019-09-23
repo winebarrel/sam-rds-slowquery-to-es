@@ -1,0 +1,15 @@
+AllCops:
+  TargetRubyVersion: 2.5
+  Exclude:
+    - 'vendor/bundle/**/*'
+    - 'rds_slowquery_to_es/vendor/**/*'
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/LineLength:
+  Max: 120
+Metrics/MethodLength:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
