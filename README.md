@@ -32,7 +32,7 @@ export AWS_SECRET_ACCESS_KEY=...
 export S3_BUCKET=... # e.g. S3_BUCKET=s3_bucket_for_sam_app
 ```
 
-### Setup AWS resources using Terraform
+### Setup AWS resources using [Terraform](https://www.terraform.io)
 
 ```sh
 cd terraform
