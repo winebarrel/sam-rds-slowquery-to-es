@@ -93,13 +93,20 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
   log_group = log.fetch('logGroup')
   log_stream = log.fetch('logStream')
   log_events = log.fetch('logEvents')
+  identifier = log_group.split('/').fetch(4)
 
   LOGGER.info('Parse slowqueries')
 
   rows = log_events.map do |log_event|
     timestamp = log_event.fetch('timestamp')
     row = parse_slowquery(log_event: log_event)
-    row.merge('log_group' => log_group, 'log_stream' => log_stream, 'log_timestamp' => timestamp)
+
+    row.merge(
+      'identifier' => identifier,
+      'log_group' => log_group,
+      'log_stream' => log_stream,
+      'log_timestamp' => timestamp
+    )
   end
 
   es = build_elasticsearch_client
