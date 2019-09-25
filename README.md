@@ -11,7 +11,9 @@
 ## Setup
 
 ```sh
+#pip install awscli
 #pip install aws-sam-cli
+#aws s3 mb aws s3://s3_bucket_for_sam_app
 bundle install
 bundle exec rake docker:lambda-ruby-bundle:build
 bundle exec rake sam:bundle
@@ -27,7 +29,7 @@ vi template.yaml # Fix Role/ELASTICSEARCH_URL
 export AWS_DEFAULT_REGION=ap-northeast-1
 export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=...
-export S3_BUCKET=...
+export S3_BUCKET=... # e.g. S3_BUCKET=s3_bucket_for_sam_app
 ```
 
 ### Setup AWS resources using Terraform
