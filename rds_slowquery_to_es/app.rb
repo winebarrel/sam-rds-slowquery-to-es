@@ -58,11 +58,13 @@ def parse_slowquery_sql(sql_lines:)
   sql_hash = Digest::SHA1.hexdigest(sql)
   fingerprint = pt_fingerprint(sql: sql)
   fingerprint.gsub!(EXCLUDE_STATEMENTS, '').strip!
+  fingerprint_hash = Digest::SHA1.hexdigest(fingerprint)
 
   {
     'sql' => sql, # Note: SQL may contain sensitive information
     'sql_fingerprint' => fingerprint,
-    'sql_hash' => sql_hash
+    'sql_hash' => sql_hash,
+    'sql_fingerprint_hash' => fingerprint_hash
   }
 end
 
