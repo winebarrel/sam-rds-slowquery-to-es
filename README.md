@@ -85,3 +85,11 @@ sam logs -n sam-rds-slowquery-to-es -t
 ```sh
 bundle exec rake sam:invoke
 ```
+
+## Delete AWS resources
+
+```sh
+aws cloudformation delete-stack --stack-name sam-rds-slowquery-to-es
+cd terraform
+terraform destroy -var-file=variables.tfvars
+```
