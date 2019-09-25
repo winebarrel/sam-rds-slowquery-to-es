@@ -3,6 +3,10 @@ resource "aws_cloudwatch_log_group" "slowquery_source_slowquery" {
 }
 
 /* TODO:
+data "aws_lambda_function" "sam_rds_slowquery_to_es" {
+  function_name = "sam-rds-slowquery-to-es"
+}
+
 resource "aws_cloudwatch_log_subscription_filter" "rds_slowquery_to_es" {
   name            = "LambdaStream_${data.aws_lambda_function.sam_rds_slowquery_to_es.function_name}"
   distribution    = "ByLogStream"
