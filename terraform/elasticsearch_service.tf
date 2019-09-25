@@ -33,3 +33,7 @@ resource "aws_elasticsearch_domain" "slowquery" {
 
   access_policies = "${data.aws_iam_policy_document.slowquery_es_policy.json}"
 }
+
+output "ELASTICSEARCH_URL" {
+  value = "https://${aws_elasticsearch_domain.slowquery.endpoint}:443"
+}

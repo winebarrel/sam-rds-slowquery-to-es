@@ -18,3 +18,7 @@ resource "aws_iam_role_policy_attachment" "rds_slowquery_to_es_aws_lambda_basic_
   role       = "${aws_iam_role.rds_slowquery_to_es.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
+output "RdsSlowqueryToEsFunction_IAM_Role" {
+  value = "${aws_iam_role.rds_slowquery_to_es.arn}"
+}

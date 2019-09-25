@@ -4,6 +4,7 @@ require 'base64'
 require 'json'
 require 'stringio'
 require 'tempfile'
+require 'yaml'
 require 'zlib'
 
 def sam_build_logs_event
@@ -71,6 +72,10 @@ namespace :sam do
 
   task :bundle do
     cd 'rds_slowquery_to_es' do
+      unless File.exist?('pt-fingerprint')
+        raise '"pt-fingerprint" not found. You must be run "bundle exec rake pt-fingerprint:download"'
+      end
+
       sh 'docker', 'run',
          '-v', "#{pwd}:/mnt",
          '-w', '/mnt',
@@ -79,7 +84,7 @@ namespace :sam do
     end
   end
 
-  task :package do
+  task package: :bundle do
     sh 'sam', 'package',
        '--template-file', 'template.yaml',
        '--output-template-file', 'packaged.yaml',
@@ -119,5 +124,15 @@ namespace :sam do
          '--payload', "file://#{event.path}",
          '/dev/stdout'
     end
+
+    elasticsearch_url = YAML.load_file('template.yaml')
+                            .fetch('Resources')
+                            .fetch('RdsSlowqueryToEsFunction')
+                            .fetch('Properties')
+                            .fetch('Environment')
+                            .fetch('Variables')
+                            .fetch('ELASTICSEARCH_URL')
+
+    puts "see #{elasticsearch_url}/_plugin/kibana"
   end
 end
