@@ -70,7 +70,7 @@ end
 
 def parse_slowquery(log_event:)
   message = log_event.fetch('message')
-  header, sql = message.each_line.group_by { |l| l =~ /\A#/ }.values
+  header, sql = message.each_line.group_by { |l| l =~ /\A\s*#/ }.values
   row = parse_slowquery_header(header_lines: header)
   row.merge(parse_slowquery_sql(sql_lines: sql))
 end
