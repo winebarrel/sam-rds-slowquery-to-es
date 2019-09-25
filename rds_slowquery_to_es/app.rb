@@ -15,6 +15,11 @@ PT_FINGERPRINT_PATH = File.join(__dir__, 'pt-fingerprint')
 ELASTICSEARCH_URL = ENV.fetch('ELASTICSEARCH_URL')
 LOGGER = Logger.new($stderr)
 
+EXCLUDE_STATEMENTS = Regexp.union(
+  /^set timestamp=\?\n/,
+  /^use \?\n/
+)
+
 def decode_log(log:)
   data = log.fetch('awslogs').fetch('data')
   data_io = StringIO.new(Base64.decode64(data))
@@ -52,7 +57,7 @@ def parse_slowquery_sql(sql_lines:)
   sql = sql_lines.join
   sql_hash = Digest::SHA1.hexdigest(sql)
   fingerprint = pt_fingerprint(sql: sql)
-  fingerprint.gsub!(/^set timestamp=\?\n/, '').strip!
+  fingerprint.gsub!(EXCLUDE_STATEMENTS, '').strip!
 
   {
     'sql' => sql, # Note: SQL may contain sensitive information

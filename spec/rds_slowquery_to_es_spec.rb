@@ -14,6 +14,7 @@ RSpec.describe '#lambda_handler' do
       # Time: %<time>s
       # User@Host: root[root] @  [10.0.1.133]  Id:  1139
       # Query_time: 10.955901  Lock_time: 0.000120 Rows_sent: 1  Rows_examined: 11376188
+      USE employees;
       SET timestamp=1568944318;
       select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
     SQL
@@ -95,12 +96,13 @@ RSpec.describe '#lambda_handler' do
                 'user' => 'root[root]',
                 'host' => '[10.0.1.133]',
                 'sql_fingerprint' => 'select sql_no_cache count(?) from (select * from salaries order by rand()) t?',
-                'sql_hash' => '17d542f685776bcefbfd62c9b94f4d4694b49479',
+                'sql_hash' => '13a2f5b4e31e8d6118525fbfd98e25023d549a76',
                 'identifier' => 'my-cluster',
                 'log_group' => '/aws/rds/cluster/my-cluster/slowquery',
                 'log_stream' => 'my-instance',
                 'log_timestamp' => 1_568_944_318_000,
                 'sql' => <<~SQL
+                  USE employees;
                   SET timestamp=1568944318;
                   select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
                 SQL
@@ -142,12 +144,13 @@ RSpec.describe '#lambda_handler' do
                 'user' => 'root[root]',
                 'host' => '[10.0.1.133]',
                 'sql_fingerprint' => 'select sql_no_cache count(?) from (select * from salaries order by rand()) t?',
-                'sql_hash' => '17d542f685776bcefbfd62c9b94f4d4694b49479',
+                'sql_hash' => '13a2f5b4e31e8d6118525fbfd98e25023d549a76',
                 'identifier' => 'my-cluster',
                 'log_group' => '/aws/rds/cluster/my-cluster/slowquery',
                 'log_stream' => 'my-instance',
                 'log_timestamp' => 1_568_944_318_000,
                 'sql' => <<~SQL
+                  USE employees;
                   SET timestamp=1568944318;
                   select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
                 SQL
@@ -189,12 +192,13 @@ RSpec.describe '#lambda_handler' do
                 'user' => 'root[root]',
                 'host' => '[10.0.1.133]',
                 'sql_fingerprint' => 'select sql_no_cache count(?) from (select * from salaries order by rand()) t?',
-                'sql_hash' => '17d542f685776bcefbfd62c9b94f4d4694b49479',
+                'sql_hash' => '13a2f5b4e31e8d6118525fbfd98e25023d549a76',
                 'identifier' => 'my-instance',
                 'log_group' => '/aws/rds/instance/my-instance/slowquery',
                 'log_stream' => 'my-instance',
                 'log_timestamp' => 1_568_944_318_000,
                 'sql' => <<~SQL
+                  USE employees;
                   SET timestamp=1568944318;
                   select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
                 SQL
