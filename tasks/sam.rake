@@ -72,10 +72,6 @@ namespace :sam do
 
   task :bundle do
     cd 'rds_slowquery_to_es' do
-      unless File.exist?('pt-fingerprint')
-        raise '"pt-fingerprint" not found. You must be run "bundle exec rake pt-fingerprint:download"'
-      end
-
       sh 'docker', 'run',
          '-v', "#{pwd}:/mnt",
          '-w', '/mnt',
@@ -85,6 +81,10 @@ namespace :sam do
   end
 
   task package: :bundle do
+    unless File.exist?('rds_slowquery_to_es/pt-fingerprint')
+      raise '"pt-fingerprint" not found. You must be run "bundle exec rake pt-fingerprint:download"'
+    end
+
     sh 'sam', 'package',
        '--template-file', 'template.yaml',
        '--output-template-file', 'packaged.yaml',
