@@ -5,6 +5,7 @@ curl -XPUT -H 'Content-Type: application/json' $ELASTICSEARCH_URL/_template/slow
 {
   "index_patterns": ["aws_rds_*_slowquery-*"],
   "mappings": {
+    "date_detection": false,
     "dynamic_templates": [
       {
         "rule1": {
@@ -19,6 +20,14 @@ curl -XPUT -H 'Content-Type: application/json' $ELASTICSEARCH_URL/_template/slow
           },
           "match_mapping_type": "string",
           "match": "sql_fingerprint"
+        }
+      },
+      {
+        "rule2": {
+          "mapping": {
+            "type": "date"
+          },
+          "match": "timestamp"
         }
       }
     ]
