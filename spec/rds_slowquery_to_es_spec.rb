@@ -10,14 +10,17 @@ RSpec.describe '#lambda_handler' do
   end
 
   let(:sql) do
-    format(<<~SQL, time: time.strftime(log_time_format))
-      # Time: %<time>s
+    sql = <<~SQL
       # User@Host: root[root] @  [10.0.1.133]  Id:  1139
       # Query_time: 10.955901  Lock_time: 0.000120 Rows_sent: 1  Rows_examined: 11376188
       USE employees;
       SET timestamp=1568944318;
       select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
     SQL
+
+    sql = format("# Time: %<time>s\n", time: time.strftime(log_time_format)) + sql if time
+
+    sql
   end
 
   let(:log_group) do
@@ -223,6 +226,48 @@ RSpec.describe '#lambda_handler' do
       expect do
         lambda_handler(event: event, context: nil)
       end.to raise_error('{"errors"=>true}')
+    end
+  end
+
+  context 'when receive a slowquery without "# Time:"' do
+    let(:time) { nil }
+
+    specify 'post to elasticsearch' do
+      expect(elasticsearch_client).to receive(:bulk).with(
+        body: [
+          {
+            index: {
+              _index: 'aws_rds_cluster_my-cluster_slowquery-2019.10.23',
+              data: {
+                'user@host' => 'root[root] @  [10.0.1.133]',
+                'id' => '1139',
+                'query_time' => 10.955901,
+                'lock_time' => 0.00012,
+                'rows_sent' => 1,
+                'rows_examined' => 11_376_188,
+                'timestamp' => '2019-09-20T01:51:58+00:00',
+                'user' => 'root[root]',
+                'host' => '[10.0.1.133]',
+                'sql_fingerprint' => 'select sql_no_cache count(?) from (select * from salaries order by rand()) t?',
+                'sql_hash' => '13a2f5b4e31e8d6118525fbfd98e25023d549a76',
+                'sql_fingerprint_hash' => 'eac1815fcea20ecf8332908e25514733722f8b6c',
+                'identifier' => 'my-cluster',
+                'log_group' => '/aws/rds/cluster/my-cluster/slowquery',
+                'log_stream' => 'my-instance',
+                'log_timestamp' => 1_568_944_318_000,
+                'sql' => <<~SQL
+                  USE employees;
+                  SET timestamp=1568944318;
+                  select sql_no_cache count(1) from (select * from salaries order by rand()) t1;
+                SQL
+              }
+            }
+          }
+        ]
+      ).and_return({})
+
+      retval = lambda_handler(event: event, context: nil)
+      expect(retval).to be_nil
     end
   end
 end

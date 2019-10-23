@@ -35,7 +35,7 @@ def parse_slowquery_header(header_lines:)
   headers = Hash[*headers]
   headers.transform_keys!(&:downcase)
 
-  headers['timestamp'] = Time.parse(headers.fetch('time')).iso8601
+  headers['timestamp'] = Time.parse(headers.fetch('time')).iso8601 if headers.key?('time')
 
   user, host = headers.fetch('user@host').split('@', 2).map(&:strip)
   headers.update('user' => user, 'host' => host)
@@ -107,6 +107,9 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
   rows = log_events.map do |log_event|
     timestamp = log_event.fetch('timestamp')
     row = parse_slowquery(log_event: log_event)
+
+    # NOTE: slowquery log may not include "# Time:"
+    row['timestamp'] = Time.at(timestamp / 1000).iso8601 unless row.key?('timestamp')
 
     row.merge(
       'identifier' => identifier,
