@@ -2,7 +2,7 @@
 
 [AWS SAM](https://aws.amazon.com/serverless/sam/) app that sends slowqueries from CloudWatch Logs to Elasticsearch.
 
-![](https://github.com/winebarrel/sam-rds-slowquery-to-es/workflows/spec/badge.svg)
+[![](https://github.com/winebarrel/sam-rds-slowquery-to-es/workflows/spec/badge.svg)](https://github.com/winebarrel/sam-rds-slowquery-to-es/actions)
 
 ![](https://user-images.githubusercontent.com/117768/65479870-2d859500-deca-11e9-876e-4df6ee55b13e.png)
 
