@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe '#lambda_handler' do
+  let(:freeze_time) do
+    Time.parse('2019/01/23 12:34:56 UTC')
+  end
+
   let(:time) do
     Time.parse('2019/01/23 12:34:56 UTC')
   end
@@ -71,7 +75,7 @@ RSpec.describe '#lambda_handler' do
   end
 
   before do
-    Timecop.freeze(time)
+    Timecop.freeze(freeze_time)
     allow(LOGGER).to receive(:info)
     allow(self).to receive(:build_elasticsearch_client).and_return(elasticsearch_client)
   end
@@ -237,7 +241,7 @@ RSpec.describe '#lambda_handler' do
         body: [
           {
             index: {
-              _index: 'aws_rds_cluster_my-cluster_slowquery-2019.10.23',
+              _index: 'aws_rds_cluster_my-cluster_slowquery-2019.01.23',
               data: {
                 'user@host' => 'root[root] @  [10.0.1.133]',
                 'id' => '1139',
