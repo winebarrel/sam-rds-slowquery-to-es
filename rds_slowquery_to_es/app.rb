@@ -16,7 +16,7 @@ ELASTICSEARCH_URL = ENV.fetch('ELASTICSEARCH_URL')
 LOGGER = Logger.new($stderr)
 
 EXCLUDE_STATEMENTS = Regexp.union(
-  /^set timestamp=\?\n/,
+  /^set timestamp=\?(\n|;\z)/,
   /^use \?\n/
 )
 
