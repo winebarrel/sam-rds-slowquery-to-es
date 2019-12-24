@@ -98,14 +98,19 @@ namespace :sam do
         --template-file packaged.yaml \
         --stack-name sam-rds-slowquery-to-es \
         --no-execute-changeset \
-        --parameter-overrides Revision=#{sam_git_hash}
-     `
+        --parameter-overrides Revision=#{sam_git_hash} \
+        --capabilities CAPABILITY_IAM
+    `
 
-    cmd = out.each_line.find { |l| l =~ /aws cloudformation describe-change-set/ }
+    abort(out) unless $CHILD_STATUS.success?
+    puts out
 
-    if cmd
-      sh cmd
-      sh cmd.sub('describe-change-set', 'delete-change-set')
+    arn_line = out.each_line.find { |l| l =~ /Changeset created successfully\./ }
+
+    if arn_line
+      change_set_arn = arn_line.sub('Changeset created successfully.', '').strip
+      sh 'aws', 'cloudformation', 'describe-change-set', '--change-set-name', change_set_arn
+      sh 'aws', 'cloudformation', 'delete-change-set', '--change-set-name', change_set_arn
     end
   end
 
@@ -114,7 +119,8 @@ namespace :sam do
        '--template-file', 'packaged.yaml',
        '--stack-name', 'sam-rds-slowquery-to-es',
        '--no-fail-on-empty-changeset',
-       '--parameter-overrides', "Revision=#{sam_git_hash}"
+       '--parameter-overrides', "Revision=#{sam_git_hash}",
+       '--capabilities', 'CAPABILITY_IAM'
   end
 
   task :invoke do
@@ -133,6 +139,6 @@ namespace :sam do
                             .fetch('Variables')
                             .fetch('ELASTICSEARCH_URL')
 
-    puts "see #{elasticsearch_url}/_plugin/kibana"
+    puts "open #{elasticsearch_url}/_plugin/kibana"
   end
 end
