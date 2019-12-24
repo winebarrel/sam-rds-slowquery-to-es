@@ -13,9 +13,13 @@ RSpec.describe '#lambda_handler' do
     '%y%m%d %_H:%M:%S'
   end
 
+  let(:user_host) do
+    'root[root] @  [10.0.1.133]'
+  end
+
   let(:sql) do
-    sql = <<~SQL
-      # User@Host: root[root] @  [10.0.1.133]  Id:  1139
+    sql = format(<<~SQL, user_host: user_host)
+      # User@Host: %<user_host>s  Id:  1139
       # Query_time: 10.955901  Lock_time: 0.000120 Rows_sent: 1  Rows_examined: 11376188
       USE employees;
       SET timestamp=1568944318;
@@ -270,6 +274,19 @@ RSpec.describe '#lambda_handler' do
         ]
       ).and_return({})
 
+      retval = lambda_handler(event: event, context: nil)
+      expect(retval).to be_nil
+    end
+  end
+
+  context 'when include a excluded user' do
+    let(:user_host) do
+      'rdsadmin[rdsadmin] @  [8.8.8.8]'
+    end
+
+    specify 'do not post to elasticsearch' do
+      expect(elasticsearch_client).to_not receive(:bulk)
+      expect(LOGGER).to receive(:warn).with(/Skip because a user to be exclude is included/)
       retval = lambda_handler(event: event, context: nil)
       expect(retval).to be_nil
     end

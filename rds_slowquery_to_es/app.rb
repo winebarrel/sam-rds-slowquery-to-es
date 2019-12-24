@@ -20,6 +20,10 @@ EXCLUDE_STATEMENTS = Regexp.union(
   /^use \?\n/
 )
 
+EXCLUDE_USERS = [
+  'rdsadmin[rdsadmin]'
+].freeze
+
 def decode_log(log:)
   data = log.fetch('awslogs').fetch('data')
   data_io = StringIO.new(Base64.decode64(data))
@@ -104,14 +108,21 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
 
   LOGGER.info('Parse slowqueries')
 
-  rows = log_events.map do |log_event|
+  rows = []
+
+  log_events.each do |log_event|
     timestamp = log_event.fetch('timestamp')
     row = parse_slowquery(log_event: log_event)
+
+    if EXCLUDE_USERS.include?(row.fetch('user'))
+      LOGGER.warn("Skip because a user to be exclude is included: #{row}")
+      next
+    end
 
     # NOTE: slowquery log may not include "# Time:"
     row['timestamp'] = Time.at(timestamp / 1000).iso8601 unless row.key?('timestamp')
 
-    row.merge(
+    rows << row.merge(
       'identifier' => identifier,
       'log_group' => log_group,
       'log_stream' => log_stream,
@@ -122,9 +133,11 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
   es = build_elasticsearch_client
   index_prefix = log_group.sub(%r{\A/}, '').tr('/', '_')
 
-  LOGGER.info("Post slowqueries: #{rows}")
-  res = post_to_elasticsearch(client: es, docs: rows, index_prefix: index_prefix)
-  LOGGER.info("Posted slowqueries to Elasticsearch: #{res}")
+  unless rows.empty?
+    LOGGER.info("Post slowqueries: #{rows}")
+    res = post_to_elasticsearch(client: es, docs: rows, index_prefix: index_prefix)
+    LOGGER.info("Posted slowqueries to Elasticsearch: #{res}")
+  end
 
   nil
 end
