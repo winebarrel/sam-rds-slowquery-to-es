@@ -37,6 +37,9 @@ def parse_slowquery_header(header_lines:)
   end.map(&:strip)
 
   headers = Hash[*headers]
+
+  return nil if headers.empty?
+
   headers.transform_keys!(&:downcase)
 
   headers['timestamp'] = Time.parse(headers.fetch('time')).iso8601 if headers.key?('time')
@@ -61,7 +64,8 @@ def parse_slowquery_sql(sql_lines:)
   sql = sql_lines.join
   sql_hash = Digest::SHA1.hexdigest(sql)
   fingerprint = pt_fingerprint(sql: sql)
-  fingerprint.gsub!(EXCLUDE_STATEMENTS, '').strip!
+  fingerprint.gsub!(EXCLUDE_STATEMENTS, '')
+  fingerprint.strip!
   fingerprint_hash = Digest::SHA1.hexdigest(fingerprint)
 
   {
@@ -74,9 +78,23 @@ end
 
 def parse_slowquery(log_event:)
   message = log_event.fetch('message')
-  header, sql = message.each_line.group_by { |l| l =~ /\A\s*#/ }.values
+  header = message.each_line.select { |l| l =~ /\A\s*#/ }
+
+  if header.empty?
+    LOGGER.warn("Skip slowquery without header: #{message.inspect.slice(0, 64)}...")
+    return nil
+  end
+
+  sql = message.each_line.reject { |l| l =~ /\A\s*#/ }
   row = parse_slowquery_header(header_lines: header)
-  row.merge(parse_slowquery_sql(sql_lines: sql))
+  parsed_sql = parse_slowquery_sql(sql_lines: sql)
+
+  if parsed_sql.fetch('sql_fingerprint', '').strip.empty?
+    LOGGER.warn("Skip slowquery without query: #{message.inspect.slice(0, 64)}...")
+    return nil
+  end
+
+  row.merge(parsed_sql)
 end
 
 def build_elasticsearch_client
@@ -96,8 +114,12 @@ def post_to_elasticsearch(client:, docs:, index_prefix:)
   res
 end
 
+def filter_row_for_logging(row)
+  row.reject { |k, _| k == 'sql_fingerprint' }
+end
+
 def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
-  LOGGER.info("Receive a event: #{event}")
+  LOGGER.info("Receive a event: #{event.to_s.slice(0, 64)}...")
 
   log = decode_log(log: event)
 
@@ -114,8 +136,10 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
     timestamp = log_event.fetch('timestamp')
     row = parse_slowquery(log_event: log_event)
 
+    next unless row
+
     if EXCLUDE_USERS.include?(row.fetch('user'))
-      LOGGER.warn("Skip because a user to be exclude is included: #{row}")
+      LOGGER.warn("Skip because a user to be exclude is included: #{filter_row_for_logging(row)}")
       next
     end
 
@@ -134,7 +158,7 @@ def lambda_handler(event:, context:) # rubocop:disable Lint/UnusedMethodArgument
   index_prefix = log_group.sub(%r{\A/}, '').tr('/', '_')
 
   unless rows.empty?
-    LOGGER.info("Post slowqueries: #{rows}")
+    LOGGER.info("Post slowqueries: #{rows.map { |r| filter_row_for_logging(r) }}")
     res = post_to_elasticsearch(client: es, docs: rows, index_prefix: index_prefix)
     LOGGER.info("Posted slowqueries to Elasticsearch: #{res}")
   end

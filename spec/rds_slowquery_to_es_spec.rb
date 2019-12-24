@@ -291,4 +291,15 @@ RSpec.describe '#lambda_handler' do
       expect(retval).to be_nil
     end
   end
+
+  context 'when receive a slowquery without header' do
+    let(:sql) { 'INVALID: SLOWQUERY LOG' }
+
+    specify 'do not post to elasticsearch' do
+      expect(elasticsearch_client).to_not receive(:bulk)
+      expect(LOGGER).to receive(:warn).with(/Skip slowquery without header/)
+      retval = lambda_handler(event: event, context: nil)
+      expect(retval).to be_nil
+    end
+  end
 end

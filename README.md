@@ -14,7 +14,7 @@
 
 ```sh
 #pip install awscli
-#pip install aws-sam-cli
+#pip install aws-sam-cli (>= 0.35.0)
 #aws s3 mb aws s3://s3_bucket_for_sam_app
 bundle install
 bundle exec rake docker:lambda-ruby-bundle:build
