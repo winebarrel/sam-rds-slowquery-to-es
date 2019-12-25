@@ -1,6 +1,6 @@
 # rds-slowquery-to-es
 
-[AWS SAM](https://aws.amazon.com/serverless/sam/) app that sends slowqueries from CloudWatch Logs to Elasticsearch.
+[AWS SAM](https://aws.amazon.com/serverless/sam/) project that sends slowqueries from CloudWatch Logs to Elasticsearch.
 
 [![](https://github.com/winebarrel/sam-rds-slowquery-to-es/workflows/spec/badge.svg)](https://github.com/winebarrel/sam-rds-slowquery-to-es/actions)
 
