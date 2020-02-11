@@ -65,7 +65,7 @@ namespace :sam do
         sh 'sam', 'local', 'invoke', 'RdsSlowqueryToEsFunction',
            '--event', event.path,
            '-n', 'local-env.json',
-           '--docker-network', 'sam-rds-rds-slowquery-to-es'
+           '--docker-network', 'sam-rds-slowquery-to-es'
       end
     end
   end

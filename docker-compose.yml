@@ -25,4 +25,4 @@ volumes:
     driver: local
 networks:
   default:
-    name: sam-rds-rds-slowquery-to-es
+    name: sam-rds-slowquery-to-es
