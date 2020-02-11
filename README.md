@@ -97,3 +97,7 @@ aws cloudformation delete-stack --stack-name sam-rds-slowquery-to-es
 cd terraform
 terraform destroy -var-file=variables.tfvars
 ```
+
+## Related Links
+
+* https://github.com/winebarrel/sam-rds-postgresql-slowquery-to-es
